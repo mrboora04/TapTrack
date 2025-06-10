@@ -20,6 +20,7 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .tracker-card-body { cursor: pointer; }
         .timer-fill { transition: height 0.5s linear; }
+        .checklist-item.completed label { text-decoration: line-through; color: #6b7280; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
@@ -59,6 +60,10 @@
                 <input type="text" id="tracker-name" placeholder="Aura Name (e.g., Mindfulness)" class="w-full p-3 border-2 border-slate-300 rounded-lg" required>
                 <textarea id="tracker-desc" placeholder="Description (optional)..." rows="2" class="w-full p-3 border-2 border-slate-300 rounded-lg"></textarea>
                 <div id="initial-note-container"><textarea id="initial-tracker-note" placeholder="Add your first intention or note..." rows="3" class="w-full p-3 border-2 border-slate-300 rounded-lg"></textarea></div>
+                <div>
+                    <label class="font-semibold text-slate-600 block mb-2">Aura Type</label>
+                    <div class="flex gap-4"><label class="flex-1"><input type="radio" name="auraType" value="positive" class="sr-only" checked><div class="p-3 border-2 border-slate-300 rounded-lg text-center cursor-pointer">Positive Habit</div></label><label class="flex-1"><input type="radio" name="auraType" value="negative" class="sr-only"><div class="p-3 border-2 border-slate-300 rounded-lg text-center cursor-pointer">Avoid Habit</div></label></div>
+                </div>
                 <div><label class="font-semibold text-slate-600 block mb-2">Goal Type</label><div id="goal-type-options" class="grid grid-cols-2 gap-2"><label><input type="radio" name="goalType" value="tap" class="sr-only" checked><div class="p-3 border-2 border-slate-300 rounded-lg text-center cursor-pointer">Tap Counter</div></label><label><input type="radio" name="goalType" value="timer" class="sr-only"><div class="p-3 border-2 border-slate-300 rounded-lg text-center cursor-pointer">Timer</div></label></div></div>
                 <div id="tap-options-container">
                     <label class="font-semibold text-slate-600 block mb-2">Repeat Schedule</label>
@@ -326,8 +331,20 @@
             if(addNewCard) {
                 openModal(document.getElementById('add-tracker-modal'));
             }
-        })
+        });
         
+        ui.myAurasBtn.addEventListener('click', async () => {
+            openModal(ui.auraSummaryModal);
+            ui.summaryContent.innerHTML = `<div class="text-center py-8"><div class="spinner mx-auto"></div><p class="mt-4">Analyzing your progress...</p></div>`;
+            const summaryData = `
+                - Total Auras: ${trackers.length}
+                - Total Taps: ${trackers.reduce((s,t) => s + (t.lastTaps?.length || 0), 0)}
+            `;
+            const prompt = `You are an encouraging AI coach. Based on this summary of a user's activity, provide a short, motivational overview of their "Aura farming" progress. Celebrate their achievements. Keep it concise and inspiring. Use markdown for bolding. Data:\n${summaryData}`;
+            const resultText = "Placeholder response. **Good work!**";
+            ui.summaryContent.innerHTML = resultText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+        });
+
         function openModal(modal) { modal.classList.remove('hidden', 'pointer-events-none', 'opacity-0'); }
         function closeModal(modal) { modal.classList.add('hidden', 'pointer-events-none', 'opacity-0'); }
         document.querySelectorAll('.cancel-modal-btn').forEach(btn => btn.addEventListener('click', (e) => closeModal(e.target.closest('.modal'))));
